@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>WHALE 50 | 세계 투자 거물 공시 추적</title>
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>WHALE 50 V4.3 | 세계 투자 거물 공시 추적</title>
 <style>
 :root{--bg:#091120;--pane:#101c2e;--panel:#142238;--line:#2a3850;--text:#e8effb;--muted:#93a6bf;--accent:#56d9c0;--accent2:#7c9bff;--green:#63e4a1;--red:#ff8f91;--yellow:#ffc76f;--nav:#0b1829}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Malgun Gothic','Noto Sans KR',sans-serif;font-size:14px}button,input,select{font:inherit}button{cursor:pointer}a{color:#9ebaff}small{color:var(--muted)}.shell{max-width:1600px;margin:auto;padding:26px 28px 50px}.top{display:flex;gap:20px;align-items:center;justify-content:space-between}.logo{display:flex;gap:13px;align-items:center}.symbol{display:grid;place-items:center;width:44px;height:44px;background:linear-gradient(145deg,#3fd9c0,#4f79f3);border-radius:13px;color:#071220;font-size:23px;font-weight:900}.brand{font-weight:800;font-size:23px;letter-spacing:-.6px}.subbrand{font-size:12px;color:var(--muted);margin-top:2px}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{border:1px solid var(--line);border-radius:10px;background:#192943;color:var(--text);padding:10px 14px;font-weight:700;white-space:nowrap}.btn:hover{border-color:var(--accent2)}.btn.primary{background:var(--accent);color:#091526;border-color:transparent}.btn:disabled{opacity:.5;cursor:default}.btn.compact{padding:8px 10px;font-size:12px}.intro{margin:23px 0 16px;line-height:1.65;color:var(--muted);font-size:13px}.intro strong{color:var(--text)}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.metric{background:var(--pane);border:1px solid var(--line);border-radius:15px;padding:20px}.metric .lbl{font-size:12px;color:var(--muted)}.metric .val{font-size:29px;font-weight:850;letter-spacing:-.5px;margin:8px 0 4px}.metric .description{font-size:12px;color:var(--muted)}.positive{color:var(--green)}.negative{color:var(--red)}.warning{color:var(--yellow)}.panel{background:var(--pane);border:1px solid var(--line);border-radius:15px;margin-top:16px;overflow:hidden}.panelhead{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:17px 20px;border-bottom:1px solid var(--line)}.panelhead strong{font-size:15px}.statusbox{padding:13px 20px;display:none;background:#132842;color:#bdd5ef;font-size:12px}.statusbox.show{display:block}.progressbar{height:5px;background:#25334b;margin-top:9px;border-radius:6px;overflow:hidden}.progressbar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}.filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 20px}.field{background:#101b2d;color:var(--text);border:1px solid #35465f;border-radius:9px;padding:10px 12px;outline:none;min-height:40px}.field:focus{border-color:var(--accent)}#search{min-width:230px;flex:1}.filters label{font-size:12px;color:var(--muted)}.check{display:flex;gap:5px;align-items:center;white-space:nowrap}.check input{accent-color:var(--accent)}.tabs{display:flex;align-items:center;overflow:auto;border-bottom:1px solid var(--line);padding:0 18px;gap:1px}.tab{padding:17px 16px;border:0;background:transparent;color:var(--muted);font-weight:750;white-space:nowrap;border-bottom:3px solid transparent}.tab.active{color:var(--accent);border-bottom-color:var(--accent)}.hint{color:var(--muted);font-size:12px;padding:13px 20px;line-height:1.65;background:#101e31}.tablewrap{overflow:auto}.data{border-collapse:collapse;width:100%;min-width:850px}.data th{text-align:left;font-size:12px;color:#9eb1cb;font-weight:700;background:#101b2c;position:sticky;top:0;padding:13px 11px;border-bottom:1px solid var(--line);white-space:nowrap}.data td{padding:13px 11px;border-bottom:1px solid #27354a;font-variant-numeric:tabular-nums}.data tbody tr:hover{background:#182842}.num{text-align:right!important;white-space:nowrap}.stock{font-weight:800;color:#e1ecff}.ticker{display:inline-block;min-width:63px;color:var(--accent);font-weight:850}.muted{color:var(--muted)}.rank{color:var(--muted);font-weight:800}.tag{border:1px solid #39516f;border-radius:5px;font-size:11px;padding:3px 5px;color:#bdd0ed;white-space:nowrap}.tag.buy{color:var(--green);border-color:#27684e}.tag.reduce{color:var(--red);border-color:#713b45}.bar{height:5px;border-radius:99px;background:#20394e;overflow:hidden;margin-top:6px;min-width:90px;max-width:240px}.bar i{height:100%;background:linear-gradient(90deg,#4bb8be,#68e1c2);display:block}.empty{padding:70px 25px;text-align:center;color:var(--muted);line-height:1.9}.empty strong{display:block;color:var(--text);font-size:18px;margin-bottom:8px}.linkbtn{border:0;color:#a1c9ff;background:transparent;text-decoration:underline;text-underline-offset:4px;padding:0}.foot{margin:18px 2px;color:var(--muted);font-size:12px;line-height:1.85}.two{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.settingsdialog{border:1px solid #3f5875;background:#121f33;color:var(--text);border-radius:16px;max-width:540px;width:calc(100% - 28px);padding:0;box-shadow:0 18px 90px #020713}.settingsdialog::backdrop{background:#030914cd}.modalhead{display:flex;align-items:center;justify-content:space-between;padding:19px 23px;border-bottom:1px solid var(--line)}.modalbody{padding:20px 23px;line-height:1.65}.modalbody label{display:block;margin:12px 0 5px;font-weight:700;font-size:13px}.modalbody .field{width:100%}.modalfoot{display:flex;gap:10px;justify-content:flex-end;padding:16px 23px 24px}.toast{display:none;background:#1b3a40;color:#aaf5dd;position:fixed;right:20px;bottom:22px;padding:14px 20px;border-radius:11px;border:1px solid #27655b;z-index:9;box-shadow:0 10px 40px #0008}.toast.visible{display:block}.small-link{color:var(--muted);font-size:12px}.pill{background:#23394a;color:#9de8d5;font-size:11px;border-radius:15px;padding:4px 8px}.tablehead{font-size:13px;color:#9eb1cb;padding:10px 20px}.err{color:var(--red);font-size:12px}.overall{color:#c4d9f5}
@@ -17,6 +17,25 @@
 .investor-meta{font-weight:700;color:var(--accent)}
 
 @media(max-width:850px){.shell{padding:14px}.top{align-items:start;flex-direction:column}.metrics{grid-template-columns:repeat(2,1fr)}.metric{padding:13px}.metric .val{font-size:23px}.two{grid-template-columns:1fr}.panelhead{flex-wrap:wrap}.filters{align-items:stretch}.filters>select{flex:1}}
+
+/* V4.3: TradingView charts. Chart is a view only; never used to score Whale50 signals. */
+.tv-wrap{padding:17px 20px 22px}
+.tv-note{background:#14283c;border:1px solid #36506c;color:#bed3e8;font-size:12px;line-height:1.7;padding:12px 14px;border-radius:10px;margin-bottom:15px}
+.tv-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:13px}
+.tv-controls label{font-weight:750;color:#b5cbe5;font-size:12px}
+.tv-controls select{min-width:165px;flex:1;max-width:310px}
+.tv-frames{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tv-frame{padding:8px 12px;font-size:12px;border:1px solid #344860;background:#14253b;color:#cedef4;border-radius:9px;font-weight:750}
+.tv-frame[aria-pressed="true"]{background:var(--accent);color:#081b21;border-color:var(--accent)}
+.tv-symbols{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 16px}
+.tv-symbol{font-size:12px;font-weight:800;border-radius:8px;border:1px solid #38506b;background:#172a40;padding:8px 10px;color:#cce0fb}
+.tv-symbol[aria-pressed="true"]{border-color:var(--accent);color:#0a2022;background:var(--accent)}
+.tv-container{width:100%;height:min(73vh,720px);min-height:440px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#101d2e}
+.tv-embed{width:100%;height:100%}
+.tv-widget-container{height:100%;width:100%}
+.tv-source{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:9px;font-size:12px;color:var(--muted)}
+.tv-source a{color:#accbff}
+@media(max-width:640px){.tv-wrap{padding:13px}.tv-container{height:58vh;min-height:390px}.tv-controls select{max-width:none}.tv-frame{padding:7px 10px}}
 </style></head><body>
 <div class="shell">
   <header class="top"><div class="logo"><div class="symbol">W</div><div><div class="brand">WHALE <span style="color:var(--accent)">50</span></div><div class="subbrand">SEC 13F · 세계 투자 거물 보유/매수 추적</div></div></div>
@@ -27,10 +46,10 @@
    <div class="metric"><div class="lbl">이전 분기와 비교 가능</div><div class="val" id="metricCompared">0</div><div class="description">매수·매도 추정 계산 가능</div></div>
    <div class="metric"><div class="lbl">선택 데이터 마지막 공시일</div><div class="val" style="font-size:23px" id="metricFiled">—</div><div class="description" id="metricSync">시작 대기</div></div></section>
   <div class="panel"><div class="panelhead"><strong>공시 수집 상태</strong><div class="small-link" id="lastChecked">SEC EDGAR 공식 자료</div></div><div class="statusbox" id="progress"><span id="progressText">업데이트 준비 중</span><div class="progressbar"><i id="progressFill"></i></div></div></div>
-  <main class="panel"><div class="tabs" id="tabs"><button data-tab="buy" class="tab active">매수금액 TOP</button><button data-tab="overlap" class="tab">공동 매수 TOP</button><button data-tab="hold" class="tab">보유금액 TOP</button><button data-tab="price" class="tab">공시 이후 주가</button><button data-tab="whales" class="tab">매수 운용사 상세</button><button data-tab="signal" class="tab">TOP 20 · 7개 봉 롱/숏 (출처 표시)</button><button data-tab="performance" class="tab">백테스트 · 실제 적중 기록</button><button data-tab="moves" class="tab">개별 매수·매도</button><button data-tab="managers" class="tab">50곳 투자자별</button><button data-tab="health" class="tab">수집 오류·상태</button></div>
+  <main class="panel"><div class="tabs" id="tabs"><button data-tab="buy" class="tab active">매수금액 TOP</button><button data-tab="overlap" class="tab">공동 매수 TOP</button><button data-tab="hold" class="tab">보유금액 TOP</button><button data-tab="price" class="tab">공시 이후 주가</button><button data-tab="whales" class="tab">매수 운용사 상세</button><button data-tab="chart" class="tab">📈 TOP 20 트레이딩뷰 차트</button><button data-tab="signal" class="tab">TOP 20 · 7개 봉 롱/숏 (출처 표시)</button><button data-tab="performance" class="tab">백테스트 · 실제 적중 기록</button><button data-tab="moves" class="tab">개별 매수·매도</button><button data-tab="managers" class="tab">50곳 투자자별</button><button data-tab="health" class="tab">수집 오류·상태</button></div>
   <div class="filters"><input id="search" class="field" placeholder="종목명 / 티커 / 운용사 검색"><select id="period" class="field"><option value="latest">각 운용사 최신 공시</option></select><select id="fund" class="field"><option value="all">투자자 전체 (50곳)</option></select><select id="limit" class="field"><option value="20" selected>상위 20위</option><option value="50">상위 50위</option><option value="100">상위 100위</option><option value="5000">전체</option></select><label class="check"><input type="checkbox" id="etf" checked> ETF 제외</label></div>
   <div id="explain" class="hint"></div><div class="signal-tools" id="signalTools" style="display:none"><button class="btn compact primary" id="signalRefresh">⟳ TOP 20 · 7개 봉 시세 갱신</button><span id="signalStatus" class="muted">기술지표는 주문을 실행하지 않습니다</span></div><div class="tablewrap" id="content"><div class="empty"><strong>공시 데이터를 준비해 주세요</strong>오른쪽 위 ‘SEC 접속 설정’에서 이메일을 입력한 후 ‘공시 업데이트’를 누르세요.</div></div><div class="tablehead" id="counts"></div></main>
-  <footer class="foot">원천자료: <a target="_blank" rel="noopener noreferrer" href="https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data">SEC EDGAR</a> / 공개되는 13F는 분기말 보유 내역이며 통상 최대 45일 뒤 제출될 수 있습니다. 공시만으로 실제 매수 날짜·체결 가격·계좌 전체 포지션·공매도는 알 수 없습니다. 주가 변화는 Yahoo Finance 비공식 공개 시세(조정종가)로 상위 일부 종목만 추적하며, 장애·지연·이용 제한이 있을 수 있습니다. 증자·주식분할·합병·CUSIP 변경·계정 이동·수정 공시로 수량 변화가 실제 매매와 다를 수 있습니다. 중복 운용사 신고는 합산 시 중복될 수 있습니다. 옵션·채권형 PRN은 기본적으로 제외하며, 13F-HR/A 수정 공시는 부분적인 추가 보고가 가능하여 현재 자동 집계에서 제외합니다. 매매 권유가 아닙니다.</footer>
+  <footer class="foot">차트: <a href="https://www.tradingview.com/" rel="noopener noreferrer" target="_blank">TradingView 공식 위젯</a> (차트 표시용, 기술지표 점수 계산에 사용하지 않음). 원천자료: <a target="_blank" rel="noopener noreferrer" href="https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data">SEC EDGAR</a> / 공개되는 13F는 분기말 보유 내역이며 통상 최대 45일 뒤 제출될 수 있습니다. 공시만으로 실제 매수 날짜·체결 가격·계좌 전체 포지션·공매도는 알 수 없습니다. 주가 변화는 Yahoo Finance 비공식 공개 시세(조정종가)로 상위 일부 종목만 추적하며, 장애·지연·이용 제한이 있을 수 있습니다. 증자·주식분할·합병·CUSIP 변경·계정 이동·수정 공시로 수량 변화가 실제 매매와 다를 수 있습니다. 중복 운용사 신고는 합산 시 중복될 수 있습니다. 옵션·채권형 PRN은 기본적으로 제외하며, 13F-HR/A 수정 공시는 부분적인 추가 보고가 가능하여 현재 자동 집계에서 제외합니다. 매매 권유가 아닙니다.</footer>
 </div>
 <dialog id="settings" class="settingsdialog"><div class="modalhead"><strong>SEC EDGAR 접속 설정</strong><button class="btn compact" id="close">닫기</button></div><div class="modalbody">SEC는 자동 조회 프로그램에 연락 가능한 이메일이 포함된 식별 정보를 요구합니다. 이 정보는 SEC 요청 헤더와 이 컴퓨터의 <code>config.json</code>에만 사용돼요.<label>연락용 이름 / 설명</label><input id="contact" class="field" value="Personal Investor"><label>이메일 주소 (필수)</label><input id="email" class="field" type="email" placeholder="you@example.com"><p style="font-size:12px;color:var(--muted)">실제 사용하는 이메일을 입력하세요. API 키나 비밀번호는 필요 없습니다. SEC 응답이 403이면 이메일과 네트워크 접속 환경을 확인하세요.</p><div class="err" id="settingError"></div></div><div class="modalfoot"><button class="btn primary" id="saveSettings">설정 저장</button></div></dialog>
 <div class="toast" id="toast"></div>
@@ -38,7 +57,7 @@
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
-const state={payload:null,signals:null,performance:null,signalRequestedFor:'',tab:'buy',period:'latest',q:'',fund:'all',limit:20,etf:true,loadedAt:0};
+const state={payload:null,signals:null,performance:null,signalRequestedFor:'',tab:'buy',period:'latest',q:'',fund:'all',limit:20,etf:true,loadedAt:0,tvTicker:'',tvInterval:'60'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const USD=n=>Number(n||0)>=1e12?'$'+(n/1e12).toFixed(2)+'T':Number(n||0)>=1e9?'$'+(n/1e9).toFixed(2)+'B':Number(n||0)>=1e6?'$'+(n/1e6).toFixed(1)+'M':Number(n||0)>=1e3?'$'+(n/1e3).toFixed(1)+'K':'$'+Math.round(Number(n||0)).toLocaleString();
 const num=n=>Math.round(Number(n||0)).toLocaleString('ko-KR');
@@ -50,10 +69,11 @@ const isEtf=r=>/ETF|EXCHANGE TRADED|ISHARES|SPDR|INVESCO QQQ|VANGUARD INDEX|INDE
 const hasQ=r=>([r.name,r.ticker,r.cusip,r.fund,r.short,r.cik,(r.tickers||[]).join(' ')].join(' ').toLowerCase().includes(state.q.toLowerCase()));
 const fundOK=r=>state.fund==='all' || r.cik===state.fund;
 function candidateRows(){const p=state.payload||{rankings:[],details:[],managers:[]};let rows=[];
- if(['buy','overlap','hold','price','whales'].includes(state.tab)){
+ if(['buy','overlap','hold','price','whales','chart'].includes(state.tab)){
    rows=p.rankings.filter(r=>!state.q||hasQ(r))
      .filter(r=>!state.etf||!isEtf(r));
    if(state.fund!=='all')rows=rows.map(r=>{const buys=r.buying_funds.filter(x=>x.cik===state.fund);const holds=r.positions.filter(x=>x.cik===state.fund);return {...r,buy_usd:buys.reduce((a,b)=>a+b.estimated_change_usd,0),sell_usd:0,hold_usd:holds.reduce((a,b)=>a+b.value_usd,0),buyers:buys.length?1:0,holders:holds.length?1:0,new_buyers:buys.some(x=>x.action==='신규')?1:0,periods:[...new Set(holds.map(x=>x.period))]}}).filter(r=>state.tab==='hold'?r.holders>0:r.buyers>0);
+   if(state.tab==='chart')rows=rows.filter(r=>r.buyers>0).sort((a,b)=>b.buy_usd-a.buy_usd||b.buyers-a.buyers).slice(0,20);
    if(state.tab==='whales')rows=rows.filter(r=>r.buyers>0).sort((a,b)=>b.buy_usd-a.buy_usd);
    if(state.tab==='buy')rows.sort((a,b)=>b.buy_usd-a.buy_usd||b.buyers-a.buyers);
    if(state.tab==='overlap')rows=rows.filter(r=>r.buyers>0).sort((a,b)=>b.buyers-a.buyers||b.buy_usd-a.buy_usd);
@@ -73,7 +93,8 @@ function setExplain(){let text={
  overlap:'<b>공동 매수 순위</b> — 몇 곳의 운용사가 같은 종목을 이전 분기보다 더 많이 보유하는지 기준으로 정렬합니다. 최상위는 투자 거물들의 동시 관심종목입니다.',
  hold:'<b>총 보유금액 순위</b> — 선택한 운용사들의 공시상 보유 평가액을 종목별 합산한 금액입니다. 매수금액과는 다릅니다.',
  whales:'<b>매수 운용사별 세부 순위</b> — 동일 회사의 서로 다른 종류주식을 합친 금액과 각 운용사별 증가 수량의 추정 가치를 펼쳐서 봅니다. 단순 보유액 증가가 아니라 보유 주식수 증가 기준입니다.',
- signal:'<b>매수 TOP 20개 주식의 봉별 롱/숏·일목균형표 분석</b> — 바이낸스 API 접근이 허용되면 24/7 주식 선물을 사용하고, 접근이 제한되면 미국 주식 정규장 시세로 명확히 표기하여 대체합니다. 15·30분, 1·4시간, 일(24시간)·주·월봉을 각각 평가합니다. 9·26·52 일목균형표(전환선·기준선·현재 구름대·후행스팬·선행구름)를 포함합니다. <strong>퍼센트는 수익 확률이나 검증된 승률이 아닌 기술지표 방향 점수입니다.</strong> 바이낸스 1일봉은 24시간, 대체 미국 주식 일봉은 정규장 1거래일입니다. 대체 시세는 밤·주말 실시간 시세가 아닙니다.',
+ chart:'<b>매수 TOP 20의 트레이딩뷰 공식 차트</b> — 종목과 15분·30분·1시간·4시간·일봉·주봉·월봉을 선택하세요. 이 차트는 TradingView의 위젯이 제공하며, Whale50의 롱·숏 점수와 백테스트에 쓰이는 가격 데이터와 <b>서로 다를 수 있습니다.</b> 장외·야간 거래 표시 여부와 시세 지연은 종목·거래소·TradingView 데이터 제공 조건에 따라 달라집니다. 차트를 불러오려면 인터넷 연결이 필요합니다.',
+    signal:'<b>매수 TOP 20개 주식의 봉별 롱/숏·일목균형표 분석</b> — 바이낸스 API 접근이 허용되면 24/7 주식 선물을 사용하고, 접근이 제한되면 미국 주식 정규장 시세로 명확히 표기하여 대체합니다. 15·30분, 1·4시간, 일(24시간)·주·월봉을 각각 평가합니다. 9·26·52 일목균형표(전환선·기준선·현재 구름대·후행스팬·선행구름)를 포함합니다. <strong>퍼센트는 수익 확률이나 검증된 승률이 아닌 기술지표 방향 점수입니다.</strong> 바이낸스 1일봉은 24시간, 대체 미국 주식 일봉은 정규장 1거래일입니다. 대체 시세는 밤·주말 실시간 시세가 아닙니다.',
  price:'<b>공시 이후 주가 변동률 순위</b> — 해당 종목의 가장 최근 매수 공시 제출일 다음 거래일 조정종가와 최근 조정종가를 비교합니다. 상위 일부 종목만 조회하며, 체결수익률·투자자 수익률이 아닙니다. Yahoo의 비공식 시세 서비스가 제한되면 값이 표시되지 않을 수 있습니다.',
  moves:'<b>매수·매도 세부 내역</b> — 누구의 어떤 종목 보유 수량이 얼마나 늘거나 줄었는지를 보여줍니다. 매수/매도 판정은 공시 수량 차이로 추정합니다.',
  managers:'<b>투자자별 순위</b> — 각 투자자가 이전 분기보다 보유 수량을 늘린 종목의 추정 가치 합계를 보여줍니다. 행을 누르면 그 투자자만 필터링합니다.',
@@ -100,7 +121,59 @@ async function loadPerformanceData(){
  try{state.performance=await api('/api/performance?period='+encodeURIComponent(state.period)+'&fund='+encodeURIComponent(state.fund));if(state.tab==='performance')renderPerformance();}
  catch(e){toast('검증 데이터 조회 오류: '+e.message)}
 }
-function renderTable(rows){if(state.tab==='performance'){renderPerformance();return;} const p=state.payload||{available_count:0};if(!rows.length){$('content').innerHTML=`<div class="empty"><strong>표시할 항목이 없습니다</strong>${p.available_count?'현재 조건에서 일치하는 데이터가 없습니다. 다른 분기나 필터를 선택하세요.':'아직 수집된 SEC 데이터가 없습니다. 설정을 저장하고 업데이트를 시작하세요.'}</div>`;$('counts').textContent='';return;}
+// TradingView official Advanced Chart widget. Visual-only integration; no market-data API.
+const TV_FRAMES=[['15','15분'],['30','30분'],['60','1시간'],['240','4시간'],['D','일봉'],['W','주봉'],['M','월봉']];
+const TV_LISTED={
+ 'GOOGL':'NASDAQ:GOOGL','GOOG':'NASDAQ:GOOG','AMZN':'NASDAQ:AMZN',
+ 'BKNG':'NASDAQ:BKNG','META':'NASDAQ:META','MSFT':'NASDAQ:MSFT','V':'NYSE:V',
+ 'NVDA':'NASDAQ:NVDA','MU':'NASDAQ:MU','AMD':'NASDAQ:AMD','UBER':'NYSE:UBER',
+ 'INTC':'NASDAQ:INTC','MA':'NYSE:MA','HD':'NYSE:HD','CVX':'NYSE:CVX',
+ 'BRK.B':'NYSE:BRK.B','BRK-B':'NYSE:BRK.B','AAPL':'NASDAQ:AAPL',
+ 'ORCL':'NYSE:ORCL','CME':'NASDAQ:CME','TSM':'NYSE:TSM','LLY':'NYSE:LLY',
+ 'TSLA':'NASDAQ:TSLA','AVGO':'NASDAQ:AVGO','TSM':'NYSE:TSM',
+ 'SPGI':'NYSE:SPGI','SNOW':'NYSE:SNOW','UNH':'NYSE:UNH'
+};
+function tvSymbol(t){
+ const ticker=String(t||'').trim().toUpperCase();
+ if(!/^[A-Z][A-Z0-9.-]{0,12}$/.test(ticker))return null;
+ return TV_LISTED[ticker]||ticker;
+}
+function renderTVChart(rows){
+ const available=rows.filter(r=>tvSymbol(r.ticker));
+ if(!available.length){$('content').innerHTML='<div class="empty"><strong>TOP 20 종목을 찾지 못했습니다</strong>공시 데이터를 먼저 수집하거나 검색 조건을 초기화해 주세요.</div>';$('counts').textContent='';return;}
+ if(!available.some(r=>r.ticker===state.tvTicker))state.tvTicker=available[0].ticker;
+ const selected=available.find(r=>r.ticker===state.tvTicker)||available[0];
+ const targetSymbol=tvSymbol(selected.ticker);
+ const sig=targetSymbol+'|'+state.tvInterval+'|'+available.map(r=>r.ticker).join(',');
+ const prior=$('tv-chart-main');
+ if(prior&&prior.dataset.sig===sig)return;
+ const selectOptions=available.map((r,i)=>`<option value="${esc(r.ticker)}" ${selected.ticker===r.ticker?'selected':''}>${i+1}. ${esc(r.ticker)} · ${esc(r.name)}</option>`).join('');
+ const chips=available.map((r,i)=>`<button type="button" class="tv-symbol" data-tv-ticker="${esc(r.ticker)}" aria-pressed="${String(r.ticker===selected.ticker)}">${i+1}. ${esc(r.ticker)}</button>`).join('');
+ const frames=TV_FRAMES.map(([id,label])=>`<button type="button" class="tv-frame" data-tv-interval="${id}" aria-pressed="${String(id===state.tvInterval)}">${label}</button>`).join('');
+ const href='https://www.tradingview.com/chart/?symbol='+encodeURIComponent(targetSymbol);
+ $('content').innerHTML=`<div class="tv-wrap" id="tv-chart-main" data-sig="${esc(sig)}">
+ <div class="tv-note"><b>공식 TradingView 주식 차트 (보기 전용)</b> · 종목을 누르면 아래 차트가 전환됩니다. 일목균형표·RSI는 차트의 지표 메뉴에서도 선택할 수 있습니다. 표시 시세는 실시간 거래 가능 여부를 의미하지 않으며, <b>이 위젯 데이터는 Whale50의 롱/숏 계산이나 백테스트로 전송되지 않습니다.</b></div>
+ <div class="tv-controls"><label for="tv-stock-select">주식 선택</label><select id="tv-stock-select" class="field">${selectOptions}</select><a class="btn compact" href="${esc(href)}" target="_blank" rel="noopener noreferrer" id="tv-open">트레이딩뷰에서 크게 보기 ↗</a></div>
+ <div class="tv-frames" role="group" aria-label="차트 시간봉">${frames}</div>
+ <div class="tv-symbols" role="group" aria-label="매수 TOP 20 종목">${chips}</div>
+ <div class="tv-container" id="tv-embed" aria-label="${esc(selected.ticker)} TradingView 캔들 차트"><div class="tv-widget-container"><div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div></div></div>
+ <div class="tv-source"><span>현재 종목: <b>${esc(selected.name)}</b> · ${esc(targetSymbol)} · 13F 추정 매수금액 ${USD(selected.buy_usd)}</span><a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">Chart by TradingView</a></div></div>`;
+ $('tv-stock-select').onchange=e=>{state.tvTicker=e.target.value;renderTVChart(rows)};
+ $('tv-chart-main').querySelectorAll('[data-tv-ticker]').forEach(b=>b.onclick=()=>{state.tvTicker=b.dataset.tvTicker;renderTVChart(rows)});
+ $('tv-chart-main').querySelectorAll('[data-tv-interval]').forEach(b=>b.onclick=()=>{state.tvInterval=b.dataset.tvInterval;renderTVChart(rows)});
+ $('counts').textContent=`매수 상위 ${available.length}개 기업 · TradingView 제공 주식 차트 · 차트와 Whale50의 기술지표 점수는 별도 계산`;
+ // Load the official widget only when the chart tab is visible. Redraw on symbol/interval change.
+ const mount=$('tv-embed').firstElementChild;
+ const opts={autosize:true,symbol:targetSymbol,interval:state.tvInterval,timezone:'Asia/Seoul',theme:'dark',style:'1',locale:'kr',allow_symbol_change:true,hide_top_toolbar:false,hide_side_toolbar:false,hide_volume:false,withdateranges:true,save_image:false,calendar:false,studies:['IchimokuCloud@tv-basicstudies','RSI@tv-basicstudies'],support_host:'https://www.tradingview.com'};
+ const script=document.createElement('script');
+ script.type='text/javascript';script.async=true;
+ script.src='https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+ script.textContent=JSON.stringify(opts);
+ script.onerror=()=>{if($('tv-embed'))$('tv-embed').insertAdjacentHTML('beforeend','<div class="tv-note">TradingView 차트가 차단됐습니다. 위의 <b>트레이딩뷰에서 크게 보기</b>를 사용해 주세요.</div>')};
+ mount.appendChild(script);
+}
+
+function renderTable(rows){if(state.tab==='performance'){renderPerformance();return;} if(state.tab==='chart'){renderTVChart(rows);return;} const p=state.payload||{available_count:0};if(!rows.length){$('content').innerHTML=`<div class="empty"><strong>표시할 항목이 없습니다</strong>${p.available_count?'현재 조건에서 일치하는 데이터가 없습니다. 다른 분기나 필터를 선택하세요.':'아직 수집된 SEC 데이터가 없습니다. 설정을 저장하고 업데이트를 시작하세요.'}</div>`;$('counts').textContent='';return;}
  if(state.tab==='whales'){
    const shown=rows.slice(0,state.limit);
    $('content').innerHTML=shown.map((r,i)=>{
@@ -139,7 +212,7 @@ function renderTable(rows){if(state.tab==='performance'){renderPerformance();ret
  if(['buy','overlap','hold','price','whales'].includes(state.tab)){
   const mode=state.tab;cols.push('순위','종목 / CUSIP',mode==='hold'?'총 보유 평가액':mode==='price'?'공시 이후 조정종가 변화율':'추정 매수금액','매수 운용사','보유 운용사','신규 편입',mode==='price'?'기준일/최근 거래일':'기준 공시 분기','매수자 상세');
   shown.forEach((r,i)=>{let amount=mode==='hold'?r.hold_usd:r.buy_usd;let bar=mode==='hold'||mode==='price'?'':`<div class="bar"><i style="width:${Math.max(1,100*r.buy_usd/max)}%"></i></div>`;
-  lines.push('<tr>'+td(i+1,'rank')+td(`<span class="ticker">${esc(r.ticker||'CUSIP')}</span><span class="stock">${esc(r.name)}</span><br><small>${esc(r.cusip)}</small>`)+td(mode==='price'&&r.price?`<strong class="${r.price.return_pct>=0?'positive':'negative'}">${r.price.return_pct>0?'+':''}${r.price.return_pct.toFixed(2)}%</strong><br><small>${r.price.start} → ${r.price.last} USD</small>`:`<strong class="${mode==='hold'?'overall':'positive'}">${USD(amount)}</strong>${bar}`,'num')+td(`<b>${num(r.buyers)}곳</b>`,'num')+td(num(r.holders),'num')+td(num(r.new_buyers)+'곳','num')+td(esc(mode==='price'&&r.price?(r.price.ref_date+' → '+r.price.latest_date):(r.periods||[]).map(x=>x.slice(0,7)).join(', ')),'num')+td(`<button class="linkbtn" data-company="${esc(r.company_key)}">누가 샀나</button>`,'num')+'</tr>')});
+  lines.push('<tr>'+td(i+1,'rank')+td(`<span class="ticker">${esc(r.ticker||'CUSIP')}</span><span class="stock">${esc(r.name)}</span><br><small>${esc(r.cusip)}</small>`)+td(mode==='price'&&r.price?`<strong class="${r.price.return_pct>=0?'positive':'negative'}">${r.price.return_pct>0?'+':''}${r.price.return_pct.toFixed(2)}%</strong><br><small>${r.price.start} → ${r.price.last} USD</small>`:`<strong class="${mode==='hold'?'overall':'positive'}">${USD(amount)}</strong>${bar}`,'num')+td(`<b>${num(r.buyers)}곳</b>`,'num')+td(num(r.holders),'num')+td(num(r.new_buyers)+'곳','num')+td(esc(mode==='price'&&r.price?(r.price.ref_date+' → '+r.price.latest_date):(r.periods||[]).map(x=>x.slice(0,7)).join(', ')),'num')+td(`<button class="linkbtn" data-company="${esc(r.company_key)}">누가 샀나</button> · <button class="linkbtn" data-stockchart="${esc(r.ticker||'')}">차트</button>`,'num')+'</tr>')});
  }else if(state.tab==='signal'){
    rows=(state.signals?.rows||[]).filter(r=>!state.q||hasQ(r));
  }else if(state.tab==='moves'){
@@ -156,6 +229,7 @@ function renderTable(rows){if(state.tab==='performance'){renderPerformance();ret
  $('counts').textContent=`전체 ${num(rows.length)}개 중 ${num(shown.length)}개 표시 · ${state.period==='latest'?'운용사별 최신 보고 기준':'선택 공시 기준 '+state.period}`;
  $('content').querySelectorAll('[data-fund]').forEach(el=>el.addEventListener('click',()=>{state.fund=el.dataset.fund;$('fund').value=state.fund;state.tab='moves';updateTabs();render();}));
  $('content').querySelectorAll('[data-company]').forEach(el=>el.addEventListener('click',()=>{const key=el.dataset.company;state.tab='whales';updateTabs();render();const target=[...$('content').querySelectorAll('details')].find(x=>x.dataset.companyKey===key);if(target){target.open=true;target.scrollIntoView({behavior:'smooth',block:'center'});}}));
+ $('content').querySelectorAll('[data-stockchart]').forEach(el=>el.addEventListener('click',()=>{state.tvTicker=el.dataset.stockchart;state.tab='chart';updateTabs();render();}));
 }
 function updateTabs(){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===state.tab));}
 function render(){if(!state.payload)return;const p=state.payload;
