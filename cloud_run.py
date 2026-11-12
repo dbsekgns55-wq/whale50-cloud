@@ -30,49 +30,9 @@ def has_fresh_sec(con, hours=22):
 
 
 def update_market(con):
-    targets,_=whale50.signal_targets()
-    utcnow=datetime.now(timezone.utc)
-    # Binance equity perpetual data: 15m closed bars checked each invocation;
-    # higher frames are refreshed hourly/day. First run always initializes.
-    source_intervals={'15m':900,'30m':1800,'1h':3600,'4h':14400,'1d':86400,'1wk':86400,'1mo':86400}
-    try:active_pairs=market.active_equity_pairs()
-    except Exception as e:
-        print('BINANCE exchangeInfo unavailable; preserving cached signals:',e,flush=True)
-        return
-    for r in targets:
-        ticker=r['ticker']
-        if ticker not in active_pairs:
-            print('UNAVAILABLE EQUITY PERP',ticker,flush=True)
-            continue
-        key=whale50.market_cache_key(ticker)
-        cache=whale50._read_signal_cache(con,key)
-        for frame,(interval,period) in sig.SOURCE.items():
-            existing=cache.get(frame)
-            if existing and existing['checked']:
-                try:
-                    age=(utcnow-datetime.fromisoformat(existing['checked']).astimezone(timezone.utc)).total_seconds()
-                    if age<source_intervals[frame]:continue
-                except ValueError:pass
-            print('BINANCE EQUITY PERP',ticker,active_pairs[ticker],frame,flush=True)
-            try:
-                bars=sig.fetch_ohlcv(ticker,interval,period)
-                previous=existing['bars'] if existing else []
-                merged=sig.merge_bars(previous,bars)
-                con.execute('''INSERT OR REPLACE INTO signal_bars(ticker,interval,bars,checked,error)
-                           VALUES(?,?,?,?,?)''',(key,frame,json.dumps(merged),utcnow.isoformat(),''))
-                cache[frame]={'bars':merged,'checked':utcnow.isoformat(),'error':''}
-            except Exception as ex:
-                err=str(ex)[:250]
-                print('PRICE ERROR',ticker,frame,err,flush=True)
-                if existing:
-                    con.execute('''UPDATE signal_bars SET error=? WHERE ticker=? AND interval=?''',(err,key,frame))
-                else:
-                    con.execute('''INSERT OR IGNORE INTO signal_bars(ticker,interval,bars,checked,error)
-                               VALUES(?,?,?,?,?)''',(key,frame,'[]',utcnow.isoformat(),err))
-            con.commit()
-            time.sleep(.07)
-        for frame,bars in valid.frame_bars({k:v['bars'] for k,v in cache.items()}).items():
-            valid.record_forward(con,key,frame,bars)
+    # Reuse the exact desktop fetching + source-selection logic.
+    # Binance HTTP 451 switches to visibly labelled US stock session candles.
+    return whale50.update_equity_market(con, force=False)
 
 
 def export_site():

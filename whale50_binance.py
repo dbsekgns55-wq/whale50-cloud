@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import time
 import urllib.request
+import urllib.error
 import urllib.parse
 
 BASE = 'https://fapi.binance.com'
@@ -29,12 +30,18 @@ TICK_MS = {'15m':900_000,'30m':1_800_000,'1h':3_600_000,'4h':14_400_000,
            '1d':86_400_000,'1wk':604_800_000,'1mo':31*86_400_000}
 
 class MarketDataError(RuntimeError): pass
+class RestrictedMarketError(MarketDataError): pass
 
 def request_json(path, query=None, timeout=15):
     url=BASE+path+(('?'+urllib.parse.urlencode(query)) if query else '')
     req=urllib.request.Request(url, headers={'User-Agent':'Whale50/4.0 read-only research','Accept':'application/json'})
-    with urllib.request.urlopen(req, timeout=timeout) as response:
-        return json.loads(response.read(2_500_000))
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            return json.loads(response.read(2_500_000))
+    except urllib.error.HTTPError as ex:
+        if ex.code==451:
+            raise RestrictedMarketError('HTTP 451: Binance 주식 선물 API 지역/법률 접근 제한') from ex
+        raise MarketDataError(f'바이낸스 응답 HTTP {ex.code}') from ex
 
 def active_equity_pairs():
     data=request_json('/fapi/v1/exchangeInfo',timeout=18)
