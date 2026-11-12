@@ -23,6 +23,7 @@ from urllib.parse import urlparse, parse_qs
 import whale50_signals as sig
 import whale50_binance as market
 import whale50_stock_fallback as stock
+import whale50_alpaca as alpaca
 import whale50_validation as validation
 
 ROOT = Path(__file__).resolve().parent
@@ -489,64 +490,83 @@ def _read_signal_cache(con,ticker):
     return {k:{'bars':json.loads(bars),'checked':checked,'error':err} for k,bars,checked,err in rows}
 
 
-def update_equity_market(con, period='latest', fund='all', force=False):
-    """Fetch ONLY one explicit source per ticker, keeping Binance and Yahoo distinct.
+def provider_cache_key(ticker,provider):
+    if provider=='binance':return market_cache_key(ticker)
+    if provider=='alpaca_iex':return 'ALPACA_IEX:'+ticker
+    if provider=='alpaca_sip':return 'ALPACA_SIP:'+ticker
+    return 'STOCK:'+ticker
 
-    HTTP 451 does NOT mean no listed ticker. When it happens, use US stock
-    REGULAR-SESSION Yahoo candles as a clearly labelled alternative, never 24/7.
+
+def update_equity_market(con, period='latest', fund='all', force=False):
+    """Update TOP20 without ever mixing feeds in signals or backtest records.
+
+    With Alpaca API keys available, use Alpaca IEX (or explicitly permitted SIP).
+    Without them, default to the existing Yahoo regular-session fallback.
+    Binance is used ONLY if WHALE50_MARKET_PROVIDER=binance is selected.
     """
+    import os
     targets,_=signal_targets(period,fund)
-    try:
-        active=market.active_equity_pairs()
-        access_error=''
-    except Exception as ex:
-        active={}
-        access_error=str(ex)[:180]
-        print('BINANCE ACCESS ERROR:',access_error,flush=True)
-    with lock: signal_job['total']=len(targets)*len(sig.FRAMES)
-    now=now_iso()
+    selected=os.environ.get('WHALE50_MARKET_PROVIDER','auto').lower().strip()
+    if selected not in ('auto','alpaca','yahoo','binance'):
+        selected='auto'
+    active={};access_error=''
+    if selected=='binance':
+        try:active=market.active_equity_pairs()
+        except Exception as ex:
+            access_error=str(ex)[:180]
+            print('BINANCE ACCESS ERROR:',access_error,flush=True)
+    with lock:signal_job['total']=len(targets)*len(sig.FRAMES)
     cutoff=(dt.datetime.now().astimezone()-dt.timedelta(seconds=sig.SIGNAL_INTERVAL_SECONDS)).isoformat()
-    counts={'binance':0,'stock':0,'errors':0}
+    counts={'binance':0,'alpaca_iex':0,'alpaca_sip':0,'stock':0,'errors':0}
     for r in targets:
         ticker=r['ticker']
-        pair=active.get(ticker,'')
-        provider='binance' if pair else 'stock'
-        reason=(('바이낸스 API 접근 제한: '+access_error) if access_error else '바이낸스에서 해당 주식 선물 거래쌍 미확인') if provider=='stock' else ''
-        cache_key=market_cache_key(ticker) if provider=='binance' else 'STOCK:'+ticker
+        if selected=='binance' and active.get(ticker):
+            provider='binance';pair=active[ticker];reason=''
+        elif selected=='binance':
+            provider='stock';pair=ticker;reason=('바이낸스 접근 오류: '+access_error if access_error else '바이낸스 주식 선물 미확인')+'; Yahoo 정규장 대체'
+        elif selected in ('auto','alpaca') and alpaca.configured():
+            af=alpaca.feed();provider='alpaca_'+af;pair=ticker
+            reason=('IEX 단일 거래소 시세, 전체 시장/24시간 시세 아님' if af=='iex' else 'SIP 전 거래소 시세 (구독 권한 필요), 24/7 아님')
+        elif selected=='alpaca':
+            af=alpaca.feed();provider='alpaca_'+af;pair=ticker
+            reason='Alpaca 키 미설정; GitHub Secrets 또는 로컬 설정 필요'
+        else:
+            provider='stock';pair=ticker
+            reason='Alpaca 키 미설정 → Yahoo 정규장 대체 (24/7 아님)' if selected=='auto' else 'Yahoo 정규장 (24/7 아님)'
+        key=provider_cache_key(ticker,provider)
         con.execute("""INSERT OR REPLACE INTO market_selection(ticker,provider,pair,note,checked)
-                       VALUES(?,?,?,?,?)""",(ticker,provider,pair,reason,now))
+                       VALUES(?,?,?,?,?)""",(ticker,provider,pair,reason,now_iso()))
         con.commit()
         counts[provider]+=1
         for frame in sig.FRAMES:
             with lock:signal_job['current']=f'{ticker} {provider} {frame}'
-            existing=con.execute('SELECT bars,checked FROM signal_bars WHERE ticker=? AND interval=?',
-                                 (cache_key,frame)).fetchone()
+            existing=con.execute('SELECT bars,checked FROM signal_bars WHERE ticker=? AND interval=?',(key,frame)).fetchone()
             if not force and existing and existing[1]>=cutoff and existing[0]!='[]':
                 with lock:signal_job['done']+=1
                 continue
             try:
-                bars=market.get_candles(pair,frame) if provider=='binance' else stock.get_candles(ticker,frame)
+                if provider=='binance':bars=market.get_candles(pair,frame)
+                elif provider.startswith('alpaca_'):bars=alpaca.get_candles(ticker,frame)
+                else:bars=stock.get_candles(ticker.replace('.','-'),frame)
                 merged=sig.merge_bars(json.loads(existing[0]) if existing else [],bars)
                 con.execute("""INSERT OR REPLACE INTO signal_bars(ticker,interval,bars,checked,error)
-                               VALUES(?,?,?,?,?)""",(cache_key,frame,json.dumps(merged),now_iso(),''))
+                               VALUES(?,?,?,?,?)""",(key,frame,json.dumps(merged),now_iso(),''))
                 print('PRICE OK',ticker,provider,frame,len(merged),flush=True)
             except Exception as ex:
                 counts['errors']+=1
                 with lock:signal_job['errors']+=1
                 con.execute("""INSERT OR REPLACE INTO signal_bars(ticker,interval,bars,checked,error)
-                               VALUES(?,?,?,?,?)""",(cache_key,frame,existing[0] if existing else '[]',now_iso(),str(ex)[:250]))
+                               VALUES(?,?,?,?,?)""",(key,frame,existing[0] if existing else '[]',now_iso(),str(ex)[:250]))
                 print('PRICE ERROR',ticker,provider,frame,str(ex)[:100],flush=True)
             con.commit()
             with lock:signal_job['done']+=1
             time.sleep(.05)
         try:
-            cache=_read_signal_cache(con,cache_key)
+            cache=_read_signal_cache(con,key)
             frames=validation.frame_bars({k:v['bars'] for k,v in cache.items() if v['bars']})
-            for frame,bars in frames.items():
-                validation.record_forward(con,cache_key,frame,bars)
-        except Exception as ex:
-            print('Validation error',ticker,ex,flush=True)
-    with lock:signal_job.update(updated=now_iso(),message=f'바이낸스 {counts["binance"]}종목, 정규장 대체 {counts["stock"]}종목, 봉 조회 오류 {counts["errors"]}건')
+            for frame,bars in frames.items():validation.record_forward(con,key,frame,bars)
+        except Exception as ex:print('Validation error',ticker,ex,flush=True)
+    with lock:signal_job.update(updated=now_iso(),message=f'Alpaca IEX {counts["alpaca_iex"]} / SIP {counts["alpaca_sip"]} / Yahoo {counts["stock"]} / Binance {counts["binance"]}; 오류 {counts["errors"]}')
     return counts
 
 
@@ -582,7 +602,7 @@ def signal_view(period='latest',fund='all'):
         for r in targets:
             item=selections.get(r['ticker'],{})
             provider=item.get('provider','')
-            key=market_cache_key(r['ticker']) if provider=='binance' else 'STOCK:'+r['ticker']
+            key=provider_cache_key(r['ticker'],provider)
             cache=_read_signal_cache(con,key)
             sources={k:v['bars'] for k,v in cache.items() if v['bars']}
             frames=sig.build_signals(sources) if provider else {
@@ -595,7 +615,7 @@ def signal_view(period='latest',fund='all'):
                         age=(dt.datetime.now(dt.timezone.utc)-dt.datetime.fromisoformat(signal['last_bar_utc'])).total_seconds()
                         # US stock source can be stale for nights/weekends: do not treat
                         # a stale regular session quote as a LIVE price.
-                        max_age=3*86400 if fr=='1d' else 12*86400 if fr=='1wk' else 40*86400 if fr=='1mo' else {'15m':3600,'30m':7200,'1h':10800,'4h':21600}[fr]
+                        max_age=5*86400 if fr=='1d' else 22*86400 if fr=='1wk' else 75*86400 if fr=='1mo' else (3*86400 if provider!='binance' else {'15m':3600,'30m':7200,'1h':10800,'4h':21600}[fr])
                         if age>max_age:
                             signal['status']='stale';signal['reason']='마지막 거래봉 오래됨 (정규장 휴장 가능)'
                     except (ValueError,TypeError): pass
@@ -605,14 +625,14 @@ def signal_view(period='latest',fund='all'):
                         'buy_usd':r['buy_usd'],'buyers':r['buyers'],
                         'market_pair':item.get('pair',''),
                         'provider':provider,'provider_note':item.get('note',''),
-                        'market_source':'바이낸스 주식 무기한 선물 24/7' if provider=='binance' else 'Yahoo 미국 주식 정규장 (24/7 아님)',
+                        'market_source':('바이낸스 주식 무기한 선물 24/7' if provider=='binance' else 'Alpaca IEX 미국 주식 (단일 거래소, 24/7 아님)' if provider=='alpaca_iex' else 'Alpaca SIP 미국 주식 (24/7 아님)' if provider=='alpaca_sip' else 'Yahoo 미국 주식 정규장 (24/7 아님)'),
                         'funds':r['buying_funds'],'frames':frames,
                         'updated':max(valid_dates,default=''),'errors':problems})
     finally: con.close()
     return {'rows':out,'unknown_ticker_skipped':unknown_count,'period':period,
-            'fund':fund,'market_source':'바이낸스 주식 선물 / 미국 주식 정규장 대체 (출처별 분리)',
+            'fund':fund,'market_source':'Alpaca / Yahoo / Binance 별도 보관 (미국 주식 24/7 아님)',
             'job':dict(signal_job),'frame_order':sig.FRAMES,'asof':now_iso(),
-            'meaning':'롱/숏 비율은 지표 방향성 점수이며 실제 예측확률이 아닙니다. Yahoo 대체는 24/7 시세가 아닙니다.'}
+            'meaning':'롱/숏은 지표 방향 점수이며 검증된 확률이 아닙니다. Alpaca 무료 IEX는 전체 거래소/24시간 시세가 아닙니다.'}
 
 
 def maybe_signals_automatic():
@@ -641,17 +661,17 @@ def performance_view(period='latest',fund='all'):
         for r in targets:
             provider,pair=selections.get(r['ticker'],('', ''))
             if not provider:continue
-            key=market_cache_key(r['ticker']) if provider=='binance' else 'STOCK:'+r['ticker']
+            key=provider_cache_key(r['ticker'],provider)
             info=_read_signal_cache(con,key)
             cache[key]={src:row['bars'] for src,row in info.items() if row['bars']}
         report=validation.report(cache,con)
         for item in report['rows']:
             key=item['ticker']
-            item['provider']='바이낸스 24/7 선물' if key.startswith('BINEQ:') else '미국 주식 정규장'
+            item['provider']=('바이낸스 24/7 선물' if key.startswith('BINEQ:') else 'Alpaca IEX' if key.startswith('ALPACA_IEX:') else 'Alpaca SIP' if key.startswith('ALPACA_SIP:') else 'Yahoo 정규장')
             item['market_pair']=selections.get(key.split(':',1)[-1],('', ''))[1]
             item['ticker']=key.split(':',1)[-1]
-        report['market_source']='출처별 개별 결과: 바이낸스 선물 또는 미국 주식 정규장 대체 (혼합 집계 비교 주의)'
-        report['notice']='정규장 미국주식과 24/7 선물의 봉은 서로 다른 자료이며 동일 전략으로 합산 비교할 수 없습니다.'
+        report['market_source']='Alpaca IEX/SIP · Yahoo 정규장 · Binance 주식선물은 출처별 개별 결과 (혼합 집계 주의)'
+        report['notice']='IEX/SIP/정규장 주식과 Binance 24/7 선물은 다른 자료이므로 적중률을 혼합 비교하면 안 됩니다.'
         return report
     finally:con.close()
 
