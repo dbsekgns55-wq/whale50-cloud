@@ -14,17 +14,13 @@ import time
 import whale50_signals as sig
 
 MIN_BARS = 78
-# 15m, 30m, 1h, 4h, trading day, week, month
+# 15m, 30m, 1h, 4h, 24h day, week, month
 FRAMES = ('15m','30m','1h','4h','1d','1wk','1mo')
 LABEL = {'15m':'15분','30m':'30분','1h':'1시간','4h':'4시간','1d':'일봉','1wk':'주봉','1mo':'월봉'}
 
 
 def frame_bars(sources):
     data = {k:list(v) for k,v in sources.items()}
-    if data.get('15m'):
-        data['30m'] = sig.resample(data['15m'],2,True)
-    if data.get('1h'):
-        data['4h'] = sig.resample(data['1h'],4,True)
     return {k:data.get(k,[]) for k in FRAMES}
 
 
@@ -143,6 +139,6 @@ def report(cache_by_ticker,con):
         finish(aggregate[fr]);f=forward_agg[fr];d=f['correct']+f['wrong']
         f['evaluated']=d;f['hit_rate']=round(f['correct']/d*100,1) if d else None
     return {'frame_order':list(FRAMES),'rows':allrows,'historical':aggregate,'forward':forward_agg,
-            'method':'Historical: past completed bars only; predict next completed bar open→close. Forward: signal was saved before that outcome occurred.',
-            'notice':'과거 재생의 적중률은 실거래 검증이 아닙니다. 관망은 제외하며 수수료·슬리피지·배당·공매도 비용을 반영하지 않습니다.',
+            'method':'Historical on Binance equity perpetuals: past completed bars only; predict next completed bar open→close. Forward: signal was saved before that outcome occurred.',
+            'notice':'바이낸스 주식 무기한 선물 가격의 과거 재생 적중률은 실거래 검증이 아닙니다. 관망은 제외하며 수수료·슬리피지·배당·공매도 비용을 반영하지 않습니다.',
             'asof':datetime.now(timezone.utc).isoformat()}

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Whale50 equity time-frame signals. Indicator scores, NOT calibrated odds.
 
-Yahoo Finance is an unofficial delayed/limited data source; no live orders.
+Signal source: Binance USD-M stock equity perpetual 24/7 public OHLCV; no live orders.
 No external Python packages required.
 """
 from __future__ import annotations
@@ -25,8 +25,8 @@ CLASS_GROUPS={
     '084670108':('BERKSHIRE','BRK.B','BERKSHIRE HATHAWAY (A+B)'),
 }
 FRAMES=['15m','30m','1h','4h','1d','1wk','1mo']
-SOURCE={'15m':('15m','1mo'), '1h':('60m','6mo'),
-        '1d':('1d','5y'), '1wk':('1wk','10y'), '1mo':('1mo','10y')}
+SOURCE={'15m':('15m','500'),'30m':('30m','500'),'1h':('1h','500'),
+        '4h':('4h','500'),'1d':('1d','500'),'1wk':('1wk','500'),'1mo':('1mo','500')}
 SIGNAL_INTERVAL_SECONDS=600   # cached source refresh >=10 minutes
 
 
@@ -73,58 +73,11 @@ def group_company_rankings(rows):
 
 
 def fetch_ohlcv(ticker, src_interval, period):
-    """Fetch Yahoo price bars; no API key, empty/limited data raises an error."""
-    symbol=quote(ticker,safe='')
-    url=f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range={period}&interval={src_interval}&includePrePost=false'
-    errors=[]
-    for host in ['query1.finance.yahoo.com','query2.finance.yahoo.com']:
-        request=urllib.request.Request(url.replace('query1.finance.yahoo.com',host),headers={
-            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept':'application/json'})
-        try:
-            with urllib.request.urlopen(request,timeout=13) as res:
-                raw=res.read(4_000_000)
-            payload=json.loads(raw)
-            results=payload.get('chart',{}).get('result') or []
-            if not results:raise ValueError('조회할 가격 자료가 없습니다')
-            result=results[0]
-            timestamps=result.get('timestamp') or []
-            q=(result.get('indicators',{}).get('quote') or [{}])[0]
-            if not timestamps:raise ValueError('거래봉이 없습니다')
-            bars=[]
-            for i,t in enumerate(timestamps):
-                try:
-                    o,h,l,c,v=(q.get(k,[])[i] for k in ('open','high','low','close','volume'))
-                    if not all(x is not None for x in (o,h,l,c)):continue
-                    o,h,l,c=map(float,(o,h,l,c))
-                    if min(o,h,l,c)<=0 or max(o,h,l,c)>1e9:continue
-                    bars.append({'t':int(t),'o':o,'h':h,'l':l,'c':c,'v':float(v or 0)})
-                except (IndexError,TypeError,ValueError):continue
-            bars.sort(key=lambda b:b['t'])
-            # Use completed regular-session candles only: the newest Yahoo bar
-            # can still be forming. Monthly/weekly are scored at last period close.
-            now=time.time()
-            offset=int(result.get('meta',{}).get('gmtoffset') or -18000)
-            exchange_now=datetime.fromtimestamp(now+offset,timezone.utc)
-            if src_interval in ('5m','15m','60m'):
-                duration={'5m':300,'15m':900,'60m':3600}[src_interval]
-                bars=[b for b in bars if b['t']+duration<=now-30]
-            elif src_interval in ('1d','1wk','1mo'):
-                todays_date=exchange_now.date()
-                before_close=(exchange_now.hour,exchange_now.minute)<(16,15)
-                def is_complete(b):
-                    day=datetime.fromtimestamp(b['t']+offset,timezone.utc).date()
-                    if src_interval=='1d':return not (day==todays_date and before_close)
-                    if src_interval=='1wk':
-                        return day.isocalendar().week!=todays_date.isocalendar().week or day.year!=todays_date.year
-                    # Current month bar does not become complete until next month.
-                    return (day.year,day.month)!=(todays_date.year,todays_date.month)
-                bars=[b for b in bars if is_complete(b)]
-            if len(bars)<35:raise ValueError('완료된 거래봉이 35개 미만입니다')
-            return bars
-        except Exception as ex:
-            errors.append(f'{host}: {type(ex).__name__} {str(ex)[:80]}')
-    raise RuntimeError(' / '.join(errors))
+    """Read only Binance equity perpetual klines (NOT Yahoo stock bars)."""
+    import whale50_binance as market
+    pair=market.EQUITY_PERPS.get(ticker)
+    if not pair:raise market.MarketDataError('해당 미국 주식의 바이낸스 주식 선물 미확인')
+    return market.get_candles(pair,src_interval)
 
 
 def merge_bars(old, new, keep=4500):
@@ -259,6 +212,4 @@ def indicator(bars,frame):
 def build_signals(sources):
     """Receive interval->list OHLCV bars and score all 7 timeframes."""
     input_bars={key:list(value) for key,value in sources.items()}
-    if '15m' in input_bars:input_bars['30m']=resample(input_bars['15m'],2,True)
-    if '1h' in input_bars:input_bars['4h']=resample(input_bars['1h'],4,True)
     return {k:indicator(input_bars.get(k,[]),k) for k in FRAMES}

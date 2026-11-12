@@ -2,7 +2,7 @@
 """GitHub Actions scheduled, static read-only Whale50 publisher.
 
 This DOES NOT run anywhere until the user publishes it to GitHub and enables
-Actions + Pages. Reads public SEC filings and unofficial Yahoo market bars.
+Actions + Pages. Reads public SEC filings and Binance equity perpetual 24/7 market bars.
 """
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
@@ -13,6 +13,7 @@ import shutil
 import time
 import whale50
 import whale50_signals as sig
+import whale50_binance as market
 import whale50_validation as valid
 
 ROOT=Path(__file__).resolve().parent
@@ -31,12 +32,20 @@ def has_fresh_sec(con, hours=22):
 def update_market(con):
     targets,_=whale50.signal_targets()
     utcnow=datetime.now(timezone.utc)
-    # Latest data where available. 15m sources checked every invocation;
+    # Binance equity perpetual data: 15m closed bars checked each invocation;
     # higher frames are refreshed hourly/day. First run always initializes.
-    source_intervals={'15m':15*60,'1h':3600,'1d':86400,'1wk':86400,'1mo':86400}
+    source_intervals={'15m':900,'30m':1800,'1h':3600,'4h':14400,'1d':86400,'1wk':86400,'1mo':86400}
+    try:active_pairs=market.active_equity_pairs()
+    except Exception as e:
+        print('BINANCE exchangeInfo unavailable; preserving cached signals:',e,flush=True)
+        return
     for r in targets:
         ticker=r['ticker']
-        cache=whale50._read_signal_cache(con,ticker)
+        if ticker not in active_pairs:
+            print('UNAVAILABLE EQUITY PERP',ticker,flush=True)
+            continue
+        key=whale50.market_cache_key(ticker)
+        cache=whale50._read_signal_cache(con,key)
         for frame,(interval,period) in sig.SOURCE.items():
             existing=cache.get(frame)
             if existing and existing['checked']:
@@ -44,26 +53,26 @@ def update_market(con):
                     age=(utcnow-datetime.fromisoformat(existing['checked']).astimezone(timezone.utc)).total_seconds()
                     if age<source_intervals[frame]:continue
                 except ValueError:pass
-            print('PRICE',ticker,frame,flush=True)
+            print('BINANCE EQUITY PERP',ticker,active_pairs[ticker],frame,flush=True)
             try:
                 bars=sig.fetch_ohlcv(ticker,interval,period)
                 previous=existing['bars'] if existing else []
                 merged=sig.merge_bars(previous,bars)
                 con.execute('''INSERT OR REPLACE INTO signal_bars(ticker,interval,bars,checked,error)
-                           VALUES(?,?,?,?,?)''',(ticker,frame,json.dumps(merged),utcnow.isoformat(),''))
+                           VALUES(?,?,?,?,?)''',(key,frame,json.dumps(merged),utcnow.isoformat(),''))
                 cache[frame]={'bars':merged,'checked':utcnow.isoformat(),'error':''}
             except Exception as ex:
                 err=str(ex)[:250]
                 print('PRICE ERROR',ticker,frame,err,flush=True)
                 if existing:
-                    con.execute('''UPDATE signal_bars SET error=? WHERE ticker=? AND interval=?''',(err,ticker,frame))
+                    con.execute('''UPDATE signal_bars SET error=? WHERE ticker=? AND interval=?''',(err,key,frame))
                 else:
                     con.execute('''INSERT OR IGNORE INTO signal_bars(ticker,interval,bars,checked,error)
-                               VALUES(?,?,?,?,?)''',(ticker,frame,'[]',utcnow.isoformat(),err))
+                               VALUES(?,?,?,?,?)''',(key,frame,'[]',utcnow.isoformat(),err))
             con.commit()
-            time.sleep(.2)
+            time.sleep(.07)
         for frame,bars in valid.frame_bars({k:v['bars'] for k,v in cache.items()}).items():
-            valid.record_forward(con,ticker,frame,bars)
+            valid.record_forward(con,key,frame,bars)
 
 
 def export_site():

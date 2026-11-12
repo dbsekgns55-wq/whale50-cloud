@@ -21,6 +21,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 import whale50_signals as sig
+import whale50_binance as market
 import whale50_validation as validation
 
 ROOT = Path(__file__).resolve().parent
@@ -457,7 +458,7 @@ def add_price_indicators(rankings,con):
 
 # Technical analysis is independent from SEC quarterly reporting; this is NOT
 # a win-probability estimate and NEVER sends trading orders.
-def signal_targets(period='latest',fund='all',limit=10):
+def signal_targets(period='latest',fund='all',limit=20):
     con=db_open()
     try:
         byfund=_snapshots(con)
@@ -476,6 +477,9 @@ def signal_targets(period='latest',fund='all',limit=10):
     return tradable[:limit],sum(not r.get('ticker') for r in eligible)
 
 
+def market_cache_key(ticker):
+    return "BINEQ:"+ticker
+
 def _read_signal_cache(con,ticker):
     rows=con.execute('SELECT interval,bars,checked,error FROM signal_bars WHERE ticker=?',(ticker,)).fetchall()
     return {k:{'bars':json.loads(bars),'checked':checked,'error':err} for k,bars,checked,err in rows}
@@ -488,13 +492,20 @@ def run_signals_update(period='latest',fund='all',force=False):
     con=db_open()
     try:
         targets,_=signal_targets(period,fund)
+        try:
+            active_pairs=market.active_equity_pairs()
+        except Exception as exc:
+            active_pairs={}
+            print('BINANCE exchangeInfo error:',exc)
         with lock:signal_job['total']=len(targets)*len(sig.SOURCE)
         cutoff=(dt.datetime.now().astimezone()-dt.timedelta(seconds=sig.SIGNAL_INTERVAL_SECONDS)).isoformat()
         for r in targets:
             ticker=r['ticker']
+            if ticker not in active_pairs:continue
+            cache_ticker=market_cache_key(ticker)
             for src,(interval,history) in sig.SOURCE.items():
                 with lock:signal_job['current']=f'{ticker} · {src}'
-                cached=con.execute('SELECT checked FROM signal_bars WHERE ticker=? AND interval=?',(ticker,src)).fetchone()
+                cached=con.execute('SELECT checked FROM signal_bars WHERE ticker=? AND interval=?',(cache_ticker,src)).fetchone()
                 if force or not cached or cached[0]<cutoff:
                     try:
                         bars=sig.fetch_ohlcv(ticker,interval,history)
@@ -504,21 +515,21 @@ def run_signals_update(period='latest',fund='all',force=False):
                         with lock:signal_job['errors']+=1
                     # A transient network error must not destroy previously valid cache.
                     if bars:
-                        saved=con.execute('SELECT bars FROM signal_bars WHERE ticker=? AND interval=?',(ticker,src)).fetchone()
+                        saved=con.execute('SELECT bars FROM signal_bars WHERE ticker=? AND interval=?',(cache_ticker,src)).fetchone()
                         bars=sig.merge_bars(json.loads(saved[0]) if saved else [],bars)
                         con.execute('''INSERT OR REPLACE INTO signal_bars(ticker,interval,bars,checked,error)
-                                       VALUES(?,?,?,?,?)''',(ticker,src,json.dumps(bars),now_iso(),error))
+                                       VALUES(?,?,?,?,?)''',(cache_ticker,src,json.dumps(bars),now_iso(),error))
                     else:
-                        row=con.execute('SELECT bars FROM signal_bars WHERE ticker=? AND interval=?',(ticker,src)).fetchone()
+                        row=con.execute('SELECT bars FROM signal_bars WHERE ticker=? AND interval=?',(cache_ticker,src)).fetchone()
                         con.execute('''INSERT OR REPLACE INTO signal_bars(ticker,interval,bars,checked,error)
-                                       VALUES(?,?,?,?,?)''',(ticker,src,row[0] if row else '[]',now_iso(),error))
+                                       VALUES(?,?,?,?,?)''',(cache_ticker,src,row[0] if row else '[]',now_iso(),error))
                     con.commit()
-                    time.sleep(0.25)
+                    time.sleep(0.08)
                 with lock:signal_job['done']+=1
             try:
-                cache=_read_signal_cache(con,ticker)
+                cache=_read_signal_cache(con,cache_ticker)
                 framebars=validation.frame_bars({k:v['bars'] for k,v in cache.items()})
-                for fr,bars in framebars.items(): validation.record_forward(con,ticker,fr,bars)
+                for fr,bars in framebars.items(): validation.record_forward(con,cache_ticker,fr,bars)
             except Exception as ex:
                 print('선행 예측 기록 오류:', ticker, ex)
         with lock:signal_job.update(updated=now_iso(),message='7개 봉 조회 완료')
@@ -541,15 +552,23 @@ def signal_view(period='latest',fund='all'):
     con=db_open()
     out=[]
     try:
+        try:active_pairs=market.active_equity_pairs()
+        except Exception as exc:
+            active_pairs={}
+            market_error=str(exc)[:180]
+        else:market_error=''
+
         for r in targets:
-            cache=_read_signal_cache(con,r['ticker'])
+            cache=_read_signal_cache(con,market_cache_key(r['ticker']))
             sources={k:v['bars'] for k,v in cache.items() if v['bars']}
-            frames=sig.build_signals(sources)
+            frames=sig.build_signals(sources) if r['ticker'] in active_pairs else {
+                fr:{'status':'unavailable','reason':('거래쌍 조회 실패: '+market_error) if market_error
+                    else '바이낸스에 거래 중인 주식 무기한 선물 없음'} for fr in sig.FRAMES}
             for fr,signal in frames.items():
                 if signal.get('status')=='ok':
                     try:
                         age=(dt.datetime.now(dt.timezone.utc)-dt.datetime.fromisoformat(signal['last_bar_utc'])).total_seconds()
-                        max_age=14*86400 if fr=='1d' else 45*86400 if fr=='1wk' else 120*86400 if fr=='1mo' else 8*86400
+                        max_age=3*86400 if fr=='1d' else 12*86400 if fr=='1wk' else 40*86400 if fr=='1mo' else {'15m':3600,'30m':7200,'1h':10800,'4h':21600}[fr]
                         if age>max_age:
                             signal['status']='stale';signal['reason']='마지막 거래봉이 오래됐습니다'
                     except (ValueError,TypeError):pass
@@ -557,17 +576,18 @@ def signal_view(period='latest',fund='all'):
             problems={k:v['error'] for k,v in cache.items() if v['error']}
             out.append({'company_key':r['company_key'],'ticker':r['ticker'],'name':r['name'],
                         'buy_usd':r['buy_usd'],'buyers':r['buyers'],
+                        'market_pair':active_pairs.get(r['ticker'],''),'market_source':'Binance USD-M 주식 무기한 선물 (24/7)',
                         'funds':r['buying_funds'],
                         'frames':frames,'updated':max(valid_dates,default=''),'errors':problems})
     finally:con.close()
     return {'rows':out,'unknown_ticker_skipped':unknown_count,'period':period,
-            'fund':fund,'job':dict(signal_job),'frame_order':sig.FRAMES,'asof':now_iso(),
+            'fund':fund,'market_source':'Binance USD-M equity perpetuals · 24/7 · read only','job':dict(signal_job),'frame_order':sig.FRAMES,'asof':now_iso(),
             'meaning':'롱/숏 비율은 지표 방향성 점수입니다. 확률/승률/보장수익률이 아닙니다.'}
 
 
 def maybe_signals_automatic():
-    # When open, refresh the top ten at most once per ten minutes. Unofficial
-    # Yahoo API can rate-limit: failures remain visible as errors, not numbers.
+    # On desktop, refresh the top 20 verified Binance equity perpetuals.
+    # API failures remain visible as errors, not invented scores.
     time.sleep(120)
     while True:
         try:
@@ -577,7 +597,7 @@ def maybe_signals_automatic():
                 fresh=con.execute('SELECT COUNT(*) FROM signal_bars WHERE checked>=?',
                           ((dt.datetime.now().astimezone()-dt.timedelta(minutes=10)).isoformat(),)).fetchone()[0]
                 con.close()
-                if have and fresh<20: try_signals_background('latest')
+                if have and fresh<15: try_signals_background('latest')
         except Exception as ex:print('Auto signal check:',ex)
         time.sleep(300)
 
@@ -587,10 +607,19 @@ def performance_view(period='latest', fund='all'):
     con=db_open()
     try:
         cache={}
+        try: active=market.active_equity_pairs()
+        except Exception:active={}
         for r in targets:
-            info=_read_signal_cache(con,r['ticker'])
-            cache[r['ticker']]={src:row['bars'] for src,row in info.items() if row['bars']}
-        return validation.report(cache,con)
+            if r['ticker'] not in active:continue
+            key=market_cache_key(r['ticker'])
+            info=_read_signal_cache(con,key)
+            cache[key]={src:row['bars'] for src,row in info.items() if row['bars']}
+        report=validation.report(cache,con)
+        for item in report['rows']:
+            item['market_pair']=active.get(item['ticker'].removeprefix('BINEQ:'),'')
+            item['ticker']=item['ticker'].removeprefix('BINEQ:')
+        report['market_source']='Binance 주식 무기한 선물 (USDT / 24시간 7일)'
+        return report
     finally:con.close()
 
 
